@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGA — Sistema Integrado de Gestión Académica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   VARIABLES & RESET
+============================================================ */
+:root {
+  --bg:        #0d0f14;
+  --surface:   #14171f;
+  --surface2:  #1c2030;
+  --border:    #252a38;
+  --accent:    #4f8ef7;
+  --accent2:   #f7c44f;
+  --danger:    #f7594f;
+  --success:   #4fc78a;
+  --text:      #e8ecf4;
+  --text-muted:#8a93aa;
+  --font-head: 'DM Serif Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius:    10px;
+  --transition: .18s ease;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+#sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo h1 {
+  font-family: var(--font-head);
+  font-size: 1.45rem;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.sidebar-logo p {
+  font-size: .72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.nav-group { padding: 16px 0 4px; }
+.nav-group-label {
+  font-size: .65rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 24px 8px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: .88rem;
+  font-weight: 400;
+  transition: var(--transition);
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(79,142,247,.08);
+  font-weight: 600;
+}
+.nav-item .icon { font-size: 1rem; width: 18px; text-align: center; }
+
+/* ============================================================
+   MAIN CONTENT
+============================================================ */
+#main {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+#topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+#page-title {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  color: var(--text);
+}
+#topbar-actions { display: flex; gap: 10px; }
+
+/* ============================================================
+   CONTENT AREA
+============================================================ */
+#content {
+  padding: 28px 32px;
+  flex: 1;
+}
+.section { display: none; }
+.section.active { display: block; }
+
+/* ============================================================
+   CARDS & STATS
+============================================================ */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: var(--transition);
+}
+.stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+.stat-label {
+  font-size: .78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* ============================================================
+   TOOLBAR
+============================================================ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.search-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: .88rem;
+  outline: none;
+  width: 260px;
+  transition: var(--transition);
+}
+.search-box:focus { border-color: var(--accent); }
+.search-box::placeholder { color: var(--text-muted); }
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: var(--transition);
+  outline: none;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #6aa3ff; }
+.btn-success { background: var(--success); color: #0d0f14; }
+.btn-success:hover { opacity: .85; }
+.btn-danger  { background: var(--danger); color: #fff; }
+.btn-danger:hover  { opacity: .85; }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-warn { background: var(--accent2); color: #0d0f14; }
+.btn-sm { padding: 5px 10px; font-size: .78rem; border-radius: 6px; }
+
+/* ============================================================
+   TABLE
+============================================================ */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+thead tr {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(79,142,247,.04); }
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: .04em;
+}
+.badge-green  { background: rgba(79,199,138,.15); color: var(--success); }
+.badge-red    { background: rgba(247,89,79,.15);  color: var(--danger); }
+.badge-blue   { background: rgba(79,142,247,.15); color: var(--accent); }
+.badge-yellow { background: rgba(247,196,79,.15); color: var(--accent2); }
+
+/* ============================================================
+   MODAL
+============================================================ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: min(540px, 95vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn {
+  from { opacity:0; transform: scale(.96) translateY(12px); }
+  to   { opacity:1; transform: scale(1)  translateY(0); }
+}
+.modal-header {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  color: var(--text);
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--danger); }
+.modal-body { padding: 22px 24px; }
+.modal-footer {
+  padding: 16px 24px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   FORM
+============================================================ */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid.single { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+label {
+  font-size: .78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+input, select, textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: .9rem;
+  outline: none;
+  transition: var(--transition);
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+select option { background: var(--surface2); }
+
+/* ============================================================
+   TOAST
+============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  min-width: 280px;
+  max-width: 360px;
+  font-size: .87rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: toastIn .22s ease;
+  border-left: 4px solid var(--accent);
+}
+.toast.success { border-left-color: var(--success); }
+.toast.error   { border-left-color: var(--danger); }
+.toast.warn    { border-left-color: var(--accent2); }
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(20px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state p { font-size: .9rem; }
+
+/* ============================================================
+   LOADING
+============================================================ */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: .9rem;
+}
+.spinner {
+  display: inline-block;
+  width: 24px; height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   REPORT SECTIONS
+============================================================ */
+.report-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.score-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.score-fill {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width .5s ease;
+}
+.score-track {
+  width: 90px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SIDEBAR
+============================================================ -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <h1>SIGA</h1>
+    <p>Gestión Académica</p>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Principal</div>
+    <div class="nav-item active" data-section="dashboard">
+      <span class="icon">⬡</span> Dashboard
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Académico</div>
+    <div class="nav-item" data-section="alumnos">
+      <span class="icon">◎</span> Alumnos
+    </div>
+    <div class="nav-item" data-section="docentes">
+      <span class="icon">◈</span> Docentes
+    </div>
+    <div class="nav-item" data-section="materias">
+      <span class="icon">◫</span> Materias
+    </div>
+    <div class="nav-item" data-section="grupos">
+      <span class="icon">◉</span> Grupos
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Control Escolar</div>
+    <div class="nav-item" data-section="inscripciones">
+      <span class="icon">⊞</span> Inscripciones
+    </div>
+    <div class="nav-item" data-section="calificaciones">
+      <span class="icon">◧</span> Calificaciones
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Finanzas</div>
+    <div class="nav-item" data-section="estado_cuenta">
+      <span class="icon">◰</span> Estado de Cuenta
+    </div>
+    <div class="nav-item" data-section="pagos">
+      <span class="icon">◱</span> Registrar Pagos
+    </div>
+    <div class="nav-item" data-section="conceptos">
+      <span class="icon">◲</span> Conceptos de Pago
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Reportes</div>
+    <div class="nav-item" data-section="rpt_aprovechamiento">
+      <span class="icon">◳</span> Aprovechamiento
+    </div>
+    <div class="nav-item" data-section="rpt_morosidad">
+      <span class="icon">◴</span> Morosidad
+    </div>
+    <div class="nav-item" data-section="rpt_horarios">
+      <span class="icon">◵</span> Disponibilidad
+    </div>
+    <div class="nav-item" data-section="rpt_promedio">
+      <span class="icon">◶</span> Promedios
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     MAIN
+============================================================ -->
+<div id="main">
+  <header id="topbar">
+    <div id="page-title">Dashboard</div>
+    <div id="topbar-actions"></div>
+  </header>
+
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <section id="section-dashboard" class="section active">
+      <div class="stats-row" id="dash-stats">
+        <div class="stat-card">
+          <div class="stat-num" id="st-alumnos">–</div>
+          <div class="stat-label">Alumnos Activos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="st-docentes">–</div>
+          <div class="stat-label">Docentes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="st-grupos">–</div>
+          <div class="stat-label">Grupos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="st-inscripciones">–</div>
+          <div class="stat-label">Inscripciones</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="st-adeudos" style="color:var(--danger)">–</div>
+          <div class="stat-label">Con Adeudos</div>
+        </div>
+      </div>
+      <div style="color:var(--text-muted);font-size:.9rem;line-height:1.8;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px">
+        <strong style="color:var(--text);font-family:var(--font-head);font-size:1.1rem;">Bienvenido al SIGA</strong><br>
+        Selecciona un módulo en la barra lateral para comenzar.<br>
+        Todos los cambios se aplican de forma inmediata a la base de datos.
+      </div>
+    </section>
+
+    <!-- ALUMNOS -->
+    <section id="section-alumnos" class="section">
+      <div class="toolbar">
+        <input class="search-box" type="search" id="search-alumnos" placeholder="Buscar alumno…">
+        <button class="btn btn-primary" onclick="openModal('alumno')">+ Nuevo Alumno</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-alumnos">
+          <thead><tr>
+            <th>Matrícula</th><th>Nombre</th><th>Carrera</th>
+            <th>Correo</th><th>Estatus</th><th>Acciones</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DOCENTES -->
+    <section id="section-docentes" class="section">
+      <div class="toolbar">
+        <input class="search-box" type="search" id="search-docentes" placeholder="Buscar docente…">
+        <button class="btn btn-primary" onclick="openModal('docente')">+ Nuevo Docente</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-docentes">
+          <thead><tr>
+            <th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Acciones</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MATERIAS -->
+    <section id="section-materias" class="section">
+      <div class="toolbar">
+        <input class="search-box" type="search" id="search-materias" placeholder="Buscar materia…">
+        <button class="btn btn-primary" onclick="openModal('materia')">+ Nueva Materia</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-materias">
+          <thead><tr>
+            <th>Clave</th><th>Nombre</th><th>Créditos</th><th>Carrera</th><th>Acciones</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GRUPOS -->
+    <section id="section-grupos" class="section">
+      <div class="toolbar">
+        <input class="search-box" type="search" id="search-grupos" placeholder="Buscar grupo…">
+        <button class="btn btn-primary" onclick="openModal('grupo')">+ Nuevo Grupo</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-grupos">
+          <thead><tr>
+            <th>Materia</th><th>Docente</th><th>Ciclo</th>
+            <th>Aula</th><th>Horario</th><th>Cupo</th><th>Inscritos</th><th>Acciones</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- INSCRIPCIONES -->
+    <section id="section-inscripciones" class="section">
+      <div class="toolbar">
+        <input class="search-box" type="search" id="search-inscripciones" placeholder="Buscar inscripción…">
+        <button class="btn btn-primary" onclick="openModal('inscripcion')">+ Nueva Inscripción</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-inscripciones">
+          <thead><tr>
+            <th>Matrícula</th><th>Alumno</th><th>Materia</th>
+            <th>Docente</th><th>Ciclo</th><th>Aula</th><th>Fecha</th><th>Acciones</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CALIFICACIONES -->
+    <section id="section-calificaciones" class="section">
+      <div class="toolbar">
+        <input class="search-box" type="search" id="search-calificaciones" placeholder="Buscar…">
+        <button class="btn btn-primary" onclick="openModal('calificacion')">+ Registrar Calificación</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-calificaciones">
+          <thead><tr>
+            <th>Matrícula</th><th>Alumno</th><th>Materia</th>
+            <th>Ciclo</th><th>Parcial</th><th>Calificación</th><th>Fecha</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ESTADO DE CUENTA -->
+    <section id="section-estado_cuenta" class="section">
+      <div class="toolbar">
+        <input class="search-box" type="search" id="search-estado_cuenta" placeholder="Buscar alumno…">
+        <button class="btn btn-ghost" onclick="loadEstadoCuenta()">↻ Actualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-estado_cuenta">
+          <thead><tr>
+            <th>Matrícula</th><th>Alumno</th><th>Concepto</th>
+            <th>Ciclo</th><th>Mes/Año</th><th>Monto</th><th>Saldo</th>
+            <th>Límite</th><th>Estado</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAGOS -->
+    <section id="section-pagos" class="section">
+      <div class="toolbar">
+        <span style="color:var(--text-muted);font-size:.88rem">Registra el pago de una mensualidad pendiente</span>
+        <button class="btn btn-primary" onclick="openModal('pago')">+ Registrar Pago</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-pagos">
+          <thead><tr>
+            <th>Matrícula</th><th>Alumno</th><th>Concepto</th>
+            <th>Mes/Año</th><th>Monto</th><th>Saldo Pend.</th><th>Límite</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONCEPTOS -->
+    <section id="section-conceptos" class="section">
+      <div class="toolbar">
+        <span style="color:var(--text-muted);font-size:.88rem">Catálogo de Conceptos de Pago</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="openModal('mensualidades')">⚡ Generar Mensualidades</button>
+          <button class="btn btn-primary" onclick="openModal('concepto')">+ Nuevo Concepto</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-conceptos">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Monto</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTE APROVECHAMIENTO -->
+    <section id="section-rpt_aprovechamiento" class="section">
+      <div class="toolbar">
+        <span style="color:var(--text-muted);font-size:.88rem">Alumnos con promedio mayor a 90 por materia</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="loadRptAprovechamiento()">↻ Actualizar</button>
+          <button class="btn btn-success" onclick="exportCSV('tbl-rpt-aprov','aprovechamiento')">↓ CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-rpt-aprov">
+          <thead><tr>
+            <th>Matrícula</th><th>Alumno</th><th>Carrera</th>
+            <th>Materia</th><th>Ciclo</th><th>Promedio</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTE MOROSIDAD -->
+    <section id="section-rpt_morosidad" class="section">
+      <div class="toolbar">
+        <span style="color:var(--text-muted);font-size:.88rem">Alumnos con pagos vencidos</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="loadRptMorosidad()">↻ Actualizar</button>
+          <button class="btn btn-success" onclick="exportCSV('tbl-rpt-moros','morosidad')">↓ CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-rpt-moros">
+          <thead><tr>
+            <th>Matrícula</th><th>Alumno</th><th>Teléfono</th>
+            <th>Correo</th><th>Meses Adeudo</th><th>Total Adeudo</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTE HORARIOS -->
+    <section id="section-rpt_horarios" class="section">
+      <div class="toolbar">
+        <span style="color:var(--text-muted);font-size:.88rem">Grupos con lugares disponibles</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="loadRptHorarios()">↻ Actualizar</button>
+          <button class="btn btn-success" onclick="exportCSV('tbl-rpt-hor','horarios')">↓ CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl-rpt-hor">
+          <thead><tr>
+            <th>Docente</th><th>Materia</th><th>Aula</th>
+            <th>Horario</th><th>Ciclo</th><th>Cupo</th><th>Inscritos</th><th>Disponibles</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTE PROMEDIO -->
+    <section id="section-rpt_promedio" class="section">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:480px">
+        <div style="font-family:var(--font-head);font-size:1.2rem;margin-bottom:20px">Calcular Promedio Final</div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Alumno</label>
+          <select id="prom-alumno-id"></select>
+        </div>
+        <div class="form-group" style="margin-bottom:20px">
+          <label>Ciclo</label>
+          <input type="text" id="prom-ciclo" placeholder="Ej: 2025-A">
+        </div>
+        <button class="btn btn-primary" onclick="calcularPromedio()" style="width:100%">
+          Calcular y Actualizar Estatus
+        </button>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ============================================================
+     MODALES
+============================================================ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Modal</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<script>
+// ============================================================
+//  CONFIGURACIÓN
+// ============================================================
+const API = 'api.php';
+let currentModal = null;
+let editingId    = null;
+let tableData    = {};  // cache local por sección
+
+// ============================================================
+//  NAVEGACIÓN
+// ============================================================
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    const sec = item.dataset.section;
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-' + sec).classList.add('active');
+    document.getElementById('page-title').textContent = item.textContent.trim();
+    document.getElementById('topbar-actions').innerHTML = '';
+    loadSection(sec);
+  });
+});
+
+function loadSection(sec) {
+  const map = {
+    dashboard:          loadDashboard,
+    alumnos:            loadAlumnos,
+    docentes:           loadDocentes,
+    materias:           loadMaterias,
+    grupos:             loadGrupos,
+    inscripciones:      loadInscripciones,
+    calificaciones:     loadCalificaciones,
+    estado_cuenta:      loadEstadoCuenta,
+    pagos:              loadPagosSection,
+    conceptos:          loadConceptos,
+    rpt_aprovechamiento: loadRptAprovechamiento,
+    rpt_morosidad:      loadRptMorosidad,
+    rpt_horarios:       loadRptHorarios,
+    rpt_promedio:       loadRptPromedio,
+  };
+  if (map[sec]) map[sec]();
+}
+
+// ============================================================
+//  AJAX HELPER
+// ============================================================
+async function api(action, data = null, method = 'GET') {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  let url = `${API}?action=${action}`;
+  if (method === 'GET' && data) {
+    url += '&' + new URLSearchParams(data).toString();
+  } else if (data) {
+    opts.body = JSON.stringify(data);
+  }
+  const res  = await fetch(url, opts);
+  const json = await res.json();
+  if (!res.ok || json.error) throw new Error(json.error || 'Error desconocido');
+  return json;
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+function toast(msg, type = 'info') {
+  const icons = { success: '✓', error: '✕', warn: '⚠', info: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type] || '·'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ============================================================
+//  TABLA HELPER
+// ============================================================
+function renderTable(tbodyId, rows, cols) {
+  const tbody = document.querySelector(`#${tbodyId} tbody`);
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="${cols.length}" style="padding:40px;text-align:center;color:var(--text-muted)">Sin registros</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `<tr>${cols.map(c => `<td>${c(r)}</td>`).join('')}</tr>`).join('');
+}
+
+function setupSearch(inputId, renderFn, dataKey) {
+  document.getElementById(inputId).addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    const filtered = (tableData[dataKey] || []).filter(r =>
+      Object.values(r).some(v => String(v).toLowerCase().includes(q))
+    );
+    renderFn(filtered);
+  });
+}
+
+// ============================================================
+//  EXPORTAR CSV
+// ============================================================
+function exportCSV(tableId, filename) {
+  const table = document.getElementById(tableId);
+  const rows  = [...table.querySelectorAll('tr')];
+  const csv   = rows.map(r =>
+    [...r.querySelectorAll('th,td')].map(c => `"${c.innerText.replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = filename + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  try {
+    const [alumnos, docentes, grupos, inscripciones, morosidad] = await Promise.all([
+      api('alumnos_list'),
+      api('docentes_list'),
+      api('grupos_list'),
+      api('inscripciones_list'),
+      api('reporte_morosidad'),
+    ]);
+    document.getElementById('st-alumnos').textContent     = alumnos.filter(a => a.estatus === 'activo').length;
+    document.getElementById('st-docentes').textContent    = docentes.length;
+    document.getElementById('st-grupos').textContent      = grupos.length;
+    document.getElementById('st-inscripciones').textContent = inscripciones.length;
+    document.getElementById('st-adeudos').textContent     = morosidad.length;
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ============================================================
+//  ALUMNOS
+// ============================================================
+function renderAlumnos(rows) {
+  const estatusBadge = s => {
+    const m = { activo: 'badge-green', inactivo: 'badge-red', egresado: 'badge-blue', irregular: 'badge-yellow', regular: 'badge-green' };
+    return `<span class="badge ${m[s] || 'badge-blue'}">${s}</span>`;
+  };
+  renderTable('tbl-alumnos', rows, [
+    r => `<span style="font-family:var(--font-mono);font-size:.82rem">${r.matricula}</span>`,
+    r => `${r.nombre} ${r.apellido_p} ${r.apellido_m || ''}`,
+    r => r.carrera,
+    r => r.correo || '–',
+    r => estatusBadge(r.estatus),
+    r => `<div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick='editAlumno(${JSON.stringify(r)})'>✎ Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteAlumno(${r.alumno_id})">✕</button>
+          </div>`,
+  ]);
+}
+
+async function loadAlumnos() {
+  try {
+    const rows = await api('alumnos_list');
+    tableData.alumnos = rows;
+    renderAlumnos(rows);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+setupSearch('search-alumnos', renderAlumnos, 'alumnos');
+
+function editAlumno(r) {
+  openModal('alumno', r);
+}
+async function deleteAlumno(id) {
+  if (!confirm('¿Eliminar este alumno? Esta acción no se puede deshacer.')) return;
+  try {
+    const res = await api('alumno_delete', { alumno_id: id }, 'POST');
+    toast(res.message, 'success');
+    loadAlumnos();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ============================================================
+//  DOCENTES
+// ============================================================
+function renderDocentes(rows) {
+  renderTable('tbl-docentes', rows, [
+    r => `${r.nombre} ${r.apellido_p} ${r.apellido_m || ''}`,
+    r => r.correo || '–',
+    r => r.telefono || '–',
+    r => `<button class="btn btn-ghost btn-sm" onclick='editDocente(${JSON.stringify(r)})'>✎ Editar</button>`,
+  ]);
+}
+async function loadDocentes() {
+  try {
+    const rows = await api('docentes_list');
+    tableData.docentes = rows;
+    renderDocentes(rows);
+  } catch(e) { toast(e.message,'error'); }
+}
+setupSearch('search-docentes', renderDocentes, 'docentes');
+function editDocente(r) { openModal('docente', r); }
+
+// ============================================================
+//  MATERIAS
+// ============================================================
+function renderMaterias(rows) {
+  renderTable('tbl-materias', rows, [
+    r => `<span style="font-family:var(--font-mono)">${r.clave}</span>`,
+    r => r.nombre,
+    r => r.creditos,
+    r => r.carrera || '–',
+    r => `<button class="btn btn-ghost btn-sm" onclick='editMateria(${JSON.stringify(r)})'>✎ Editar</button>`,
+  ]);
+}
+async function loadMaterias() {
+  try {
+    const rows = await api('materias_list');
+    tableData.materias = rows;
+    renderMaterias(rows);
+  } catch(e) { toast(e.message,'error'); }
+}
+setupSearch('search-materias', renderMaterias, 'materias');
+function editMateria(r) { openModal('materia', r); }
+
+// ============================================================
+//  GRUPOS
+// ============================================================
+function renderGrupos(rows) {
+  renderTable('tbl-grupos', rows, [
+    r => r.materia,
+    r => r.docente,
+    r => `<span class="badge badge-blue">${r.ciclo}</span>`,
+    r => r.aula || '–',
+    r => r.horario || '–',
+    r => r.cupo_maximo,
+    r => {
+      const pct = Math.round((r.inscritos / r.cupo_maximo) * 100);
+      const color = pct >= 90 ? 'var(--danger)' : pct >= 70 ? 'var(--accent2)' : 'var(--success)';
+      return `<div class="score-bar"><span style="color:${color}">${r.inscritos}</span>
+              <div class="score-track"><div class="score-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
+    },
+    r => `<button class="btn btn-ghost btn-sm" onclick='editGrupo(${JSON.stringify(r)})'>✎ Editar</button>`,
+  ]);
+}
+async function loadGrupos() {
+  try {
+    const rows = await api('grupos_list');
+    tableData.grupos = rows;
+    renderGrupos(rows);
+  } catch(e) { toast(e.message,'error'); }
+}
+setupSearch('search-grupos', renderGrupos, 'grupos');
+function editGrupo(r) { openModal('grupo', r); }
+
+// ============================================================
+//  INSCRIPCIONES
+// ============================================================
+function renderInscripciones(rows) {
+  renderTable('tbl-inscripciones', rows, [
+    r => `<span style="font-family:var(--font-mono);font-size:.82rem">${r.matricula}</span>`,
+    r => r.alumno,
+    r => r.materia,
+    r => r.docente,
+    r => `<span class="badge badge-blue">${r.ciclo}</span>`,
+    r => r.aula || '–',
+    r => r.fecha_inscr,
+    r => `<button class="btn btn-danger btn-sm" onclick="deleteInscripcion(${r.inscripcion_id})">Cancelar</button>`,
+  ]);
+}
+async function loadInscripciones() {
+  try {
+    const rows = await api('inscripciones_list');
+    tableData.inscripciones = rows;
+    renderInscripciones(rows);
+  } catch(e) { toast(e.message,'error'); }
+}
+setupSearch('search-inscripciones', renderInscripciones, 'inscripciones');
+async function deleteInscripcion(id) {
+  if (!confirm('¿Cancelar esta inscripción?')) return;
+  try {
+    const res = await api('inscripcion_delete', { inscripcion_id: id }, 'POST');
+    toast(res.message, 'success');
+    loadInscripciones();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ============================================================
+//  CALIFICACIONES
+// ============================================================
+function renderCalificaciones(rows) {
+  renderTable('tbl-calificaciones', rows, [
+    r => `<span style="font-family:var(--font-mono);font-size:.82rem">${r.matricula}</span>`,
+    r => r.alumno,
+    r => r.materia,
+    r => r.ciclo,
+    r => `P${r.parcial}`,
+    r => {
+      const c = parseFloat(r.calificacion);
+      const color = c >= 70 ? 'var(--success)' : 'var(--danger)';
+      return `<span style="font-family:var(--font-mono);font-weight:600;color:${color}">${c.toFixed(1)}</span>`;
+    },
+    r => r.fecha_registro?.slice(0,10) || '–',
+  ]);
+}
+async function loadCalificaciones() {
+  try {
+    const rows = await api('calificaciones_list');
+    tableData.calificaciones = rows;
+    renderCalificaciones(rows);
+  } catch(e) { toast(e.message,'error'); }
+}
+setupSearch('search-calificaciones', renderCalificaciones, 'calificaciones');
+
+// ============================================================
+//  ESTADO DE CUENTA
+// ============================================================
+function renderEstadoCuenta(rows) {
+  const meses = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  renderTable('tbl-estado_cuenta', rows, [
+    r => `<span style="font-family:var(--font-mono);font-size:.82rem">${r.matricula}</span>`,
+    r => r.alumno,
+    r => r.concepto,
+    r => r.ciclo,
+    r => `${meses[r.mes]} ${r.anio}`,
+    r => `$${parseFloat(r.monto).toFixed(2)}`,
+    r => `<span style="font-family:var(--font-mono);color:${r.saldo > 0 ? 'var(--danger)':'var(--success)'}">$${parseFloat(r.saldo).toFixed(2)}</span>`,
+    r => r.fecha_limite,
+    r => r.pagado === true || r.pagado === 't'
+           ? `<span class="badge badge-green">Pagado</span>`
+           : `<span class="badge badge-red">Pendiente</span>`,
+  ]);
+}
+async function loadEstadoCuenta() {
+  try {
+    const rows = await api('estado_cuenta_list');
+    tableData.estado_cuenta = rows;
+    renderEstadoCuenta(rows);
+  } catch(e) { toast(e.message,'error'); }
+}
+setupSearch('search-estado_cuenta', renderEstadoCuenta, 'estado_cuenta');
+
+// ============================================================
+//  PAGOS
+// ============================================================
+async function loadPagosSection() {
+  try {
+    const rows = await api('estado_cuenta_list');
+    // Solo los pendientes
+    const meses = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const pending = rows.filter(r => r.pagado !== true && r.pagado !== 't');
+    tableData.pagos = pending;
+    renderTable('tbl-pagos', pending, [
+      r => `<span style="font-family:var(--font-mono);font-size:.82rem">${r.matricula}</span>`,
+      r => r.alumno,
+      r => r.concepto,
+      r => `${meses[r.mes]} ${r.anio}`,
+      r => `$${parseFloat(r.monto).toFixed(2)}`,
+      r => `<span style="font-family:var(--font-mono);color:var(--danger)">$${parseFloat(r.saldo).toFixed(2)}</span>`,
+      r => r.fecha_limite,
+    ]);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ============================================================
+//  CONCEPTOS
+// ============================================================
+async function loadConceptos() {
+  try {
+    const rows = await api('conceptos_list');
+    tableData.conceptos = rows;
+    renderTable('tbl-conceptos', rows, [
+      r => r.concepto_id,
+      r => r.nombre,
+      r => `$${parseFloat(r.monto).toFixed(2)}`,
+      r => `<button class="btn btn-ghost btn-sm" onclick='editConcepto(${JSON.stringify(r)})'>✎ Editar</button>`,
+    ]);
+  } catch(e) { toast(e.message,'error'); }
+}
+function editConcepto(r) { openModal('concepto', r); }
+
+// ============================================================
+//  REPORTES
+// ============================================================
+async function loadRptAprovechamiento() {
+  try {
+    const rows = await api('reporte_aprovechamiento');
+    renderTable('tbl-rpt-aprov', rows, [
+      r => `<span style="font-family:var(--font-mono);font-size:.82rem">${r.matricula}</span>`,
+      r => r.alumno,
+      r => r.carrera,
+      r => r.materia,
+      r => r.ciclo,
+      r => {
+        const p = parseFloat(r.promedio_materia);
+        return `<div class="score-bar">
+          <span style="font-family:var(--font-mono);font-weight:600;color:var(--success)">${p.toFixed(2)}</span>
+          <div class="score-track"><div class="score-fill" style="width:${p}%"></div></div>
+        </div>`;
+      },
+    ]);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function loadRptMorosidad() {
+  try {
+    const rows = await api('reporte_morosidad');
+    renderTable('tbl-rpt-moros', rows, [
+      r => `<span style="font-family:var(--font-mono);font-size:.82rem">${r.matricula}</span>`,
+      r => r.alumno,
+      r => r.telefono || '–',
+      r => r.correo || '–',
+      r => `<span class="badge badge-red">${r.meses_adeudo}</span>`,
+      r => `<span style="font-family:var(--font-mono);font-weight:600;color:var(--danger)">$${parseFloat(r.total_adeudo).toFixed(2)}</span>`,
+    ]);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function loadRptHorarios() {
+  try {
+    const rows = await api('reporte_horarios');
+    renderTable('tbl-rpt-hor', rows, [
+      r => r.docente,
+      r => r.materia,
+      r => r.aula || '–',
+      r => r.horario || '–',
+      r => r.ciclo,
+      r => r.cupo_maximo,
+      r => r.inscritos,
+      r => `<span class="badge badge-green">${r.lugares_disponibles}</span>`,
+    ]);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function loadRptPromedio() {
+  // Populate select
+  try {
+    const alumnos = await api('catalogo_alumnos');
+    const sel = document.getElementById('prom-alumno-id');
+    sel.innerHTML = alumnos.map(a => `<option value="${a.id}">${a.label}</option>`).join('');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function calcularPromedio() {
+  const alumno_id = document.getElementById('prom-alumno-id').value;
+  const ciclo     = document.getElementById('prom-ciclo').value.trim();
+  if (!ciclo) { toast('Ingresa el ciclo', 'warn'); return; }
+  try {
+    const res = await api('calcular_promedio', { alumno_id, ciclo }, 'POST');
+    toast(res.message, 'success');
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ============================================================
+//  MODALES
+// ============================================================
+const MODAL_CONFIGS = {};
+
+function openModal(type, data = null) {
+  currentModal = type;
+  editingId    = null;
+  const overlay = document.getElementById('modal-overlay');
+  const body    = document.getElementById('modal-body');
+  const title   = document.getElementById('modal-title');
+  const saveBtn = document.getElementById('modal-save-btn');
+  saveBtn.style.display = 'inline-flex';
+
+  const builders = {
+    alumno:        () => buildAlumnoModal(data),
+    docente:       () => buildDocenteModal(data),
+    materia:       () => buildMateriaModal(data),
+    grupo:         () => buildGrupoModal(data),
+    inscripcion:   () => buildInscripcionModal(),
+    calificacion:  () => buildCalificacionModal(),
+    pago:          () => buildPagoModal(),
+    concepto:      () => buildConceptoModal(data),
+    mensualidades: () => buildMensualidadesModal(),
+  };
+
+  const titles = {
+    alumno:'Alumno', docente:'Docente', materia:'Materia', grupo:'Grupo',
+    inscripcion:'Nueva Inscripción', calificacion:'Registrar Calificación',
+    pago:'Registrar Pago', concepto:'Concepto de Pago', mensualidades:'Generar Mensualidades',
+  };
+
+  title.textContent = (data ? 'Editar ' : 'Nuevo ') + (titles[type] || type);
+  body.innerHTML = '<div class="loading"><span class="spinner"></span>Cargando…</div>';
+  overlay.classList.add('open');
+
+  Promise.resolve(builders[type]?.()).then(html => {
+    if (html) body.innerHTML = html;
+  });
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  currentModal = null; editingId = null;
+}
+
+// ── MODAL BUILDERS ────────────────────────────────────────────
+function buildAlumnoModal(data) {
+  if (data) editingId = data.alumno_id;
+  return `<div class="form-grid">
+    <div class="form-group"><label>Matrícula</label>
+      <input id="f-matricula" value="${data?.matricula||''}" placeholder="2024001"></div>
+    <div class="form-group"><label>Nombre</label>
+      <input id="f-nombre" value="${data?.nombre||''}" placeholder="Juan"></div>
+    <div class="form-group"><label>Apellido Paterno</label>
+      <input id="f-apellido_p" value="${data?.apellido_p||''}" placeholder="García"></div>
+    <div class="form-group"><label>Apellido Materno</label>
+      <input id="f-apellido_m" value="${data?.apellido_m||''}" placeholder="López"></div>
+    <div class="form-group full"><label>Carrera</label>
+      <input id="f-carrera" value="${data?.carrera||''}" placeholder="Ingeniería en Sistemas"></div>
+    <div class="form-group"><label>Correo</label>
+      <input id="f-correo" type="email" value="${data?.correo||''}" placeholder="a@correo.com"></div>
+    <div class="form-group"><label>Teléfono</label>
+      <input id="f-telefono" value="${data?.telefono||''}" placeholder="5512345678"></div>
+    <div class="form-group"><label>Estatus</label>
+      <select id="f-estatus">
+        ${['activo','inactivo','egresado'].map(e => `<option value="${e}" ${data?.estatus===e?'selected':''}>${e}</option>`).join('')}
+      </select></div>
+  </div>`;
+}
+
+function buildDocenteModal(data) {
+  if (data) editingId = data.docente_id;
+  return `<div class="form-grid">
+    <div class="form-group"><label>Nombre</label>
+      <input id="f-nombre" value="${data?.nombre||''}"></div>
+    <div class="form-group"><label>Apellido Paterno</label>
+      <input id="f-apellido_p" value="${data?.apellido_p||''}"></div>
+    <div class="form-group"><label>Apellido Materno</label>
+      <input id="f-apellido_m" value="${data?.apellido_m||''}"></div>
+    <div class="form-group"><label>Correo</label>
+      <input id="f-correo" type="email" value="${data?.correo||''}"></div>
+    <div class="form-group"><label>Teléfono</label>
+      <input id="f-telefono" value="${data?.telefono||''}"></div>
+  </div>`;
+}
+
+function buildMateriaModal(data) {
+  if (data) editingId = data.materia_id;
+  return `<div class="form-grid">
+    <div class="form-group"><label>Clave</label>
+      <input id="f-clave" value="${data?.clave||''}" placeholder="SIS-101"></div>
+    <div class="form-group"><label>Créditos</label>
+      <input id="f-creditos" type="number" value="${data?.creditos||''}" min="1"></div>
+    <div class="form-group full"><label>Nombre</label>
+      <input id="f-nombre" value="${data?.nombre||''}" placeholder="Álgebra Lineal"></div>
+    <div class="form-group full"><label>Carrera</label>
+      <input id="f-carrera" value="${data?.carrera||''}" placeholder="Ingeniería en Sistemas"></div>
+  </div>`;
+}
+
+async function buildGrupoModal(data) {
+  if (data) editingId = data.grupo_id;
+  const [docentes, materias] = await Promise.all([
+    api('catalogo_docentes'), api('catalogo_materias')
+  ]);
+  const selDoc = docentes.map(d => `<option value="${d.id}" ${data?.docente_id==d.id?'selected':''}>${d.label}</option>`).join('');
+  const selMat = materias.map(m => `<option value="${m.id}" ${data?.materia_id==m.id?'selected':''}>${m.label}</option>`).join('');
+  return `<div class="form-grid">
+    <div class="form-group full"><label>Materia</label><select id="f-materia_id">${selMat}</select></div>
+    <div class="form-group full"><label>Docente</label><select id="f-docente_id">${selDoc}</select></div>
+    <div class="form-group"><label>Ciclo</label><input id="f-ciclo" value="${data?.ciclo||''}" placeholder="2025-A"></div>
+    <div class="form-group"><label>Cupo Máximo</label><input id="f-cupo_maximo" type="number" value="${data?.cupo_maximo||30}" min="1"></div>
+    <div class="form-group"><label>Aula</label><input id="f-aula" value="${data?.aula||''}" placeholder="A-201"></div>
+    <div class="form-group"><label>Horario</label><input id="f-horario" value="${data?.horario||''}" placeholder="Lun/Mie 08:00-10:00"></div>
+  </div>`;
+}
+
+async function buildInscripcionModal() {
+  const [alumnos, grupos] = await Promise.all([
+    api('catalogo_alumnos'), api('catalogo_grupos')
+  ]);
+  return `<div class="form-grid single">
+    <div class="form-group"><label>Alumno</label>
+      <select id="f-alumno_id">${alumnos.map(a=>`<option value="${a.id}">${a.label}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Grupo</label>
+      <select id="f-grupo_id">${grupos.map(g=>`<option value="${g.id}">${g.label}</option>`).join('')}</select></div>
+  </div>`;
+}
+
+async function buildCalificacionModal() {
+  const alumnos = await api('catalogo_alumnos');
+  return `<div class="form-grid single">
+    <div class="form-group"><label>Alumno</label>
+      <select id="f-cal-alumno" onchange="loadInscripcionesSelect(this.value)">
+        ${alumnos.map(a=>`<option value="${a.id}">${a.label}</option>`).join('')}
+      </select></div>
+    <div class="form-group"><label>Inscripción / Materia</label>
+      <select id="f-inscripcion_id"><option>— Selecciona alumno primero —</option></select></div>
+    <div class="form-group"><label>Parcial</label>
+      <select id="f-parcial"><option value="1">Parcial 1</option><option value="2">Parcial 2</option><option value="3">Parcial 3</option></select></div>
+    <div class="form-group"><label>Calificación (0-100)</label>
+      <input id="f-calificacion" type="number" min="0" max="100" step="0.01" placeholder="85.50"></div>
+  </div>`;
+}
+
+async function loadInscripcionesSelect(alumnoId) {
+  const sel = document.getElementById('f-inscripcion_id');
+  sel.innerHTML = '<option>Cargando…</option>';
+  try {
+    const insc = await api('inscripciones_list', { alumno_id: alumnoId });
+    sel.innerHTML = insc.map(i => `<option value="${i.inscripcion_id}">${i.materia} – ${i.ciclo}</option>`).join('');
+  } catch(e) { sel.innerHTML = '<option>Error al cargar</option>'; }
+}
+
+async function buildPagoModal() {
+  const pending = (await api('estado_cuenta_list')).filter(r => r.pagado !== true && r.pagado !== 't' && parseFloat(r.saldo) > 0);
+  const meses = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return `<div class="form-grid single">
+    <div class="form-group"><label>Cargo a Pagar</label>
+      <select id="f-estado_id" onchange="setAlumnoPago(this)">
+        ${pending.map(p => `<option value="${p.estado_id}" data-alumno="${p.alumno_id}" data-saldo="${p.saldo}">
+          ${p.alumno} – ${p.concepto} ${meses[p.mes]}/${p.anio} (Saldo: $${parseFloat(p.saldo).toFixed(2)})
+        </option>`).join('')}
+      </select></div>
+    <input type="hidden" id="f-alumno_pago_id">
+    <div class="form-group"><label>Monto a Pagar</label>
+      <input id="f-monto_pagado" type="number" step="0.01" placeholder="0.00"></div>
+    <div class="form-group"><label>Método de Pago</label>
+      <select id="f-metodo_pago">
+        <option value="efectivo">Efectivo</option>
+        <option value="transferencia">Transferencia</option>
+        <option value="tarjeta">Tarjeta</option>
+      </select></div>
+  </div>`;
+}
+
+function setAlumnoPago(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('f-alumno_pago_id').value = opt.dataset.alumno;
+  document.getElementById('f-monto_pagado').value   = opt.dataset.saldo;
+}
+
+function buildConceptoModal(data) {
+  if (data) editingId = data.concepto_id;
+  return `<div class="form-grid single">
+    <div class="form-group"><label>Nombre</label>
+      <input id="f-concepto-nombre" value="${data?.nombre||''}" placeholder="Colegiatura mensual"></div>
+    <div class="form-group"><label>Monto ($)</label>
+      <input id="f-concepto-monto" type="number" step="0.01" value="${data?.monto||''}" placeholder="1500.00"></div>
+  </div>`;
+}
+
+async function buildMensualidadesModal() {
+  const conceptos = await api('catalogo_conceptos');
+  return `<div class="form-grid">
+    <div class="form-group full"><label>Concepto</label>
+      <select id="f-men-concepto">${conceptos.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Ciclo</label>
+      <input id="f-men-ciclo" placeholder="2025-A"></div>
+    <div class="form-group"><label>Mes Inicio</label>
+      <input id="f-men-mes" type="number" min="1" max="12" value="1"></div>
+    <div class="form-group"><label>Año</label>
+      <input id="f-men-anio" type="number" value="${new Date().getFullYear()}"></div>
+    <div class="form-group"><label>Cantidad de Meses</label>
+      <input id="f-men-meses" type="number" min="1" max="12" value="4"></div>
+  </div>`;
+}
+
+// ── SAVE MODAL ────────────────────────────────────────────────
+async function saveModal() {
+  const handlers = {
+    alumno:        saveAlumno,
+    docente:       saveDocente,
+    materia:       saveMateria,
+    grupo:         saveGrupo,
+    inscripcion:   saveInscripcion,
+    calificacion:  saveCalificacion,
+    pago:          savePago,
+    concepto:      saveConcepto,
+    mensualidades: saveMensualidades,
+  };
+  if (handlers[currentModal]) {
+    try { await handlers[currentModal](); }
+    catch(e) { toast(e.message, 'error'); }
+  }
+}
+
+async function saveAlumno() {
+  const data = {
+    matricula: v('f-matricula'), nombre: v('f-nombre'), apellido_p: v('f-apellido_p'),
+    apellido_m: v('f-apellido_m'), carrera: v('f-carrera'), correo: v('f-correo'),
+    telefono: v('f-telefono'), estatus: v('f-estatus'),
+  };
+  if (editingId) data.alumno_id = editingId;
+  const res = await api('alumno_save', data, 'POST');
+  toast(res.message, 'success'); closeModal(); loadAlumnos();
+}
+
+async function saveDocente() {
+  const data = {
+    nombre: v('f-nombre'), apellido_p: v('f-apellido_p'), apellido_m: v('f-apellido_m'),
+    correo: v('f-correo'), telefono: v('f-telefono'),
+  };
+  if (editingId) data.docente_id = editingId;
+  const res = await api('docente_save', data, 'POST');
+  toast(res.message, 'success'); closeModal(); loadDocentes();
+}
+
+async function saveMateria() {
+  const data = {
+    clave: v('f-clave'), nombre: v('f-nombre'), creditos: v('f-creditos'), carrera: v('f-carrera'),
+  };
+  if (editingId) data.materia_id = editingId;
+  const res = await api('materia_save', data, 'POST');
+  toast(res.message, 'success'); closeModal(); loadMaterias();
+}
+
+async function saveGrupo() {
+  const data = {
+    materia_id: v('f-materia_id'), docente_id: v('f-docente_id'), ciclo: v('f-ciclo'),
+    cupo_maximo: v('f-cupo_maximo'), aula: v('f-aula'), horario: v('f-horario'),
+  };
+  if (editingId) data.grupo_id = editingId;
+  const res = await api('grupo_save', data, 'POST');
+  toast(res.message, 'success'); closeModal(); loadGrupos();
+}
+
+async function saveInscripcion() {
+  const res = await api('inscripcion_save', { alumno_id: v('f-alumno_id'), grupo_id: v('f-grupo_id') }, 'POST');
+  toast(res.message, 'success'); closeModal(); loadInscripciones();
+}
+
+async function saveCalificacion() {
+  const res = await api('calificacion_save', {
+    inscripcion_id: v('f-inscripcion_id'),
+    parcial: v('f-parcial'),
+    calificacion: v('f-calificacion'),
+  }, 'POST');
+  toast(res.message, 'success'); closeModal(); loadCalificaciones();
+}
+
+async function savePago() {
+  const res = await api('registrar_pago', {
+    estado_id:    v('f-estado_id'),
+    alumno_id:    v('f-alumno_pago_id'),
+    monto_pagado: v('f-monto_pagado'),
+    metodo_pago:  v('f-metodo_pago'),
+  }, 'POST');
+  toast(res.message, 'success'); closeModal(); loadPagosSection();
+}
+
+async function saveConcepto() {
+  const data = { nombre: v('f-concepto-nombre'), monto: v('f-concepto-monto') };
+  if (editingId) data.concepto_id = editingId;
+  const res = await api('concepto_save', data, 'POST');
+  toast(res.message, 'success'); closeModal(); loadConceptos();
+}
+
+async function saveMensualidades() {
+  const res = await api('generar_mensualidades', {
+    concepto_id: v('f-men-concepto'), ciclo: v('f-men-ciclo'),
+    mes_inicio:  v('f-men-mes'),      anio: v('f-men-anio'), meses: v('f-men-meses'),
+  }, 'POST');
+  toast(res.message, 'success'); closeModal();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function v(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>
